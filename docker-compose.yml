@@ -1,0 +1,38 @@
+version: '3'
+services:
+  web:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/chaos:/usr/lib/chaos
+  api:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+  script:
+    build:
+      context: script
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+      - web
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    hostname: grafana
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
